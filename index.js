@@ -1,8 +1,9 @@
 const express = require("express");
 const cors = require("cors");
-
 const mongoose = require("mongoose");
 const User = require("./models/User");
+const jwt = require("jsonwebtoken");
+const authMiddleware = require("./middleware/auth");
 
 require("dotenv").config();
 
@@ -18,7 +19,6 @@ app.use(
 
 app.use(express.json());
 
-// Route de test
 app.get("/", (req, res) => {
   console.log("test");
   res.json({ message: "✅ Serveur fonctionne !" });
@@ -30,6 +30,37 @@ app.post("/register", async (req, res) => {
     res.status(201).json(user);
   } catch (error) {
     res.status(400).json({ message: error.message, errors: error.errors });
+  }
+});
+
+app.post("/logIn", async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+    if (!user) {
+      return res.status(401).json({ message: "Wrong email or password" });
+    }
+    if (user.password !== req.body.password) {
+      return res.status(401).json({ message: "Wrong email or password" });
+    }
+    const token = jwt.sign(
+      {
+        userId: user._id,
+        email: user.email,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN }
+    );
+    res.json({
+      message: "Successfull login",
+      token: token,
+      user: {
+        id: user._id,
+        nickname: user.nickname,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message, errors: error.errors });
   }
 });
 
