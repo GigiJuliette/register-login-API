@@ -70,6 +70,9 @@ app.get("/users", authenticateToken, async (req, res) => {
     const userSafe = allUsers.map((u) => {
       const user = u.toObject();
       delete user.password;
+      delete user._id;
+      delete user.__v;
+
       return user;
     });
 
