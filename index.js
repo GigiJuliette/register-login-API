@@ -1,11 +1,10 @@
-const express = require("express");
-const cors = require("cors");
-const mongoose = require("mongoose");
-const User = require("./models/User");
-const jwt = require("jsonwebtoken");
-const authMiddleware = require("./middleware/auth");
-
-require("dotenv").config();
+import express from "express";
+import cors from "cors";
+import mongoose from "mongoose";
+import { User } from "./models/User.js";
+import jwt from "jsonwebtoken";
+import { authenticateToken } from "./middleware/auth.js";
+import "dotenv/config";
 
 const app = express();
 
@@ -61,6 +60,22 @@ app.post("/logIn", async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: error.message, errors: error.errors });
+  }
+});
+
+app.get("/users", authenticateToken, async (req, res) => {
+  try {
+    const allUsers = await User.find();
+
+    const userSafe = allUsers.map((u) => {
+      const user = u.toObject();
+      delete user.password;
+      return user;
+    });
+
+    res.json(userSafe);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
