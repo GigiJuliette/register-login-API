@@ -18,11 +18,6 @@ app.use(
 
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  console.log("test");
-  res.json({ message: "✅ Serveur fonctionne !" });
-});
-
 app.post("/register", async (req, res) => {
   try {
     const user = await User.create(req.body);
@@ -78,7 +73,6 @@ app.get("/users", authenticateToken, async (req, res) => {
 });
 
 app.get("/myUser", authenticateToken, async (req, res) => {
-  // console.log("hi");
   try {
     const myUser = await User.findById(req.user.userId);
     const userSafe = myUser.toObject();
@@ -118,7 +112,8 @@ mongoose
   .then(() => console.log("Connecté à MongoDB"))
   .catch((err) => console.error("Erreur MongoDB:", err));
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
+
 app.listen(PORT, () => {
-  console.log(`Serveur lancé sur http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
