@@ -52,11 +52,6 @@ app.post("/logIn", async (req, res) => {
     res.json({
       message: "Successfull login",
       token: token,
-      user: {
-        id: user._id,
-        nickname: user.nickname,
-        email: user.email,
-      },
     });
   } catch (error) {
     res.status(500).json({ message: error.message, errors: error.errors });
@@ -75,6 +70,42 @@ app.get("/users", authenticateToken, async (req, res) => {
 
       return user;
     });
+
+    res.json(userSafe);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.get("/myUser", authenticateToken, async (req, res) => {
+  // console.log("hi");
+  try {
+    const myUser = await User.findById(req.user.userId);
+    const userSafe = myUser.toObject();
+    delete userSafe.password;
+    delete userSafe._id;
+    delete userSafe.__v;
+    res.json(userSafe);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.put("/update", authenticateToken, async (req, res) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate(req.user.userId, req.body);
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (req.body.password === "") {
+      return res
+        .status(401)
+        .json({ message: "You need to enter your password to allow changes" });
+    }
+    const userSafe = updatedUser.toObject();
+    delete userSafe.password;
+    delete userSafe._id;
+    delete userSafe.__v;
 
     res.json(userSafe);
   } catch (error) {

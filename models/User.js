@@ -1,3 +1,4 @@
+import { request } from "express";
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
@@ -17,6 +18,24 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: false,
+  },
+  name: {
+    type: String,
+    required: false,
+    trim: true,
+  },
+  surname: {
+    type: String,
+    required: false,
+    trim: true,
+  },
+  bio: {
+    type: String,
+    required: false,
+  },
+  profileIcon_id: {
+    type: Number,
+    request: false,
   },
 });
 
