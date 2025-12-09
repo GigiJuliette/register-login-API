@@ -1,11 +1,12 @@
-import express from "express";
 import cors from "cors";
-import mongoose from "mongoose";
-import { User } from "./models/User.js";
+import express from "express";
 import jwt from "jsonwebtoken";
-import { authenticateToken } from "./middleware/auth.js";
+import mongoose from "mongoose";
+
 import "dotenv/config";
 
+import { User } from "./models/User.js";
+import { authenticateToken } from "./middleware/auth.js";
 import {
   hashPassword,
   comparePassword,
@@ -23,11 +24,10 @@ app.use(
 
 app.use(express.json());
 
+// Inputs validation is handled on the frontend
 app.post("/register", async (req, res) => {
   try {
-    console.log(req.body.password);
     const hashedPassword = await hashPassword(req.body.password);
-    console.log(hashedPassword);
     const user = await User.create({
       ...req.body,
       password: hashedPassword,
@@ -71,7 +71,7 @@ app.post("/logIn", async (req, res) => {
       token: token,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message, errors: error.errors });
+    res.status(500).json({ message: "An error has occurred" });
   }
 });
 
@@ -116,11 +116,6 @@ app.put("/update", authenticateToken, async (req, res) => {
     );
     if (!updatedUser) {
       return res.status(404).json({ message: "User not found" });
-    }
-    if (req.body.password === "") {
-      return res
-        .status(401)
-        .json({ message: "You need to enter your password to allow changes" });
     }
     const userSafe = updatedUser.toObject();
     delete userSafe.password;
