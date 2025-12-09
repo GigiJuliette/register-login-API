@@ -6,6 +6,11 @@ import jwt from "jsonwebtoken";
 import { authenticateToken } from "./middleware/auth.js";
 import "dotenv/config";
 
+import {
+  hashPassword,
+  comparePassword,
+} from "./middleware/passwordsMethods.js";
+
 const app = express();
 
 app.use(
@@ -20,8 +25,20 @@ app.use(express.json());
 
 app.post("/register", async (req, res) => {
   try {
-    const user = await User.create(req.body);
-    res.status(201).json(user);
+    console.log(req.body.password);
+    const hashedPassword = await hashPassword(req.body.password);
+    console.log(hashedPassword);
+    const user = await User.create({
+      ...req.body,
+      password: hashedPassword,
+    });
+
+    const userSafe = user.toObject();
+    delete userSafe.password;
+    delete userSafe._id;
+    delete userSafe.__v;
+
+    res.status(201).json(userSafe);
   } catch (error) {
     res.status(400).json({ message: error.message, errors: error.errors });
   }
@@ -30,12 +47,17 @@ app.post("/register", async (req, res) => {
 app.post("/logIn", async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.email });
+
     if (!user) {
-      return res.status(401).json({ message: "Wrong email or password" });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
-    if (user.password !== req.body.password) {
-      return res.status(401).json({ message: "Wrong email or password" });
+
+    const isCorrect = await comparePassword(req.body.password, user.password);
+
+    if (!isCorrect) {
+      return res.status(401).json({ message: "Invalid email or password" });
     }
+
     const token = jwt.sign(
       {
         userId: user._id,
@@ -87,7 +109,11 @@ app.get("/myUser", authenticateToken, async (req, res) => {
 
 app.put("/update", authenticateToken, async (req, res) => {
   try {
-    const updatedUser = await User.findByIdAndUpdate(req.user.userId, req.body);
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.userId,
+      req.body,
+      { new: true }
+    );
     if (!updatedUser) {
       return res.status(404).json({ message: "User not found" });
     }
