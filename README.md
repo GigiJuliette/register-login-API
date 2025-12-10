@@ -13,6 +13,7 @@ A RESTful API backend for user authentication and profile management built with 
 - [Project Structure](#project-structure)
 - [Security](#security)
 - [Future Improvements](#future-improvements)
+- [Deployment](#deployment)
 
 - [Frontend Repository](https://github.com/GigiJuliette/register-login-FRONT)
 
@@ -333,5 +334,9 @@ Password security utilities:
 - Require password confirmation before deletion
 
 ---
+
+## Deployment
+
+Render [Render] (https://render.com/):
 
 **Note**: This is a backend API only. A frontend application is required to interact with these endpoints.
