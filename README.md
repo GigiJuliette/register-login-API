@@ -14,6 +14,8 @@ A RESTful API backend for user authentication and profile management built with 
 - [Security](#security)
 - [Future Improvements](#future-improvements)
 
+- [Frontend Repository](https://github.com/GigiJuliette/register-login-FRONT)
+
 ## Features
 
 - **User Registration**: Create new user accounts with secure password hashing
