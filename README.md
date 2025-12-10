@@ -294,6 +294,8 @@ Password security utilities:
 - Token expiration time is configurable via `JWT_EXPIRES_IN`
 - Protected routes require valid, non-expired tokens
 
+_Logout is handled client-side by clearing the token from local storage. If a user still has a valid token saved elsewhere after logout and manually adds it back to local storage, they can access protected routes as if they were logged in._
+
 ### Data Privacy
 
 - Passwords, MongoDB `_id`, and `__v` fields are excluded from all API responses
