@@ -338,5 +338,6 @@ Password security utilities:
 ## Deployment
 
 Render [Render] (https://render.com/):
+_With free plan, server can fall asleep. First request may take some time to respond._
 
 **Note**: This is a backend API only. A frontend application is required to interact with these endpoints.
