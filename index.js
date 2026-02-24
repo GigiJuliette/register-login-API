@@ -1,16 +1,9 @@
 import cors from "cors";
 import express from "express";
-import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import routes from "./routes/index.js";
 
 import "dotenv/config";
-
-import { User } from "./models/User.js";
-import { authenticateToken } from "./middleware/auth.js";
-import {
-  hashPassword,
-  comparePassword,
-} from "./middleware/passwordsMethods.js";
 
 const app = express();
 
@@ -19,114 +12,11 @@ app.use(
     origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  }),
 );
 
 app.use(express.json());
-
-// Inputs validation is handled on the frontend
-app.post("/register", async (req, res) => {
-  try {
-    const hashedPassword = await hashPassword(req.body.password);
-    const user = await User.create({
-      ...req.body,
-      password: hashedPassword,
-    });
-
-    const userSafe = user.toObject();
-    delete userSafe.password;
-    delete userSafe._id;
-    delete userSafe.__v;
-
-    res.status(201).json(userSafe);
-  } catch (error) {
-    res.status(400).json({ message: error.message, errors: error.errors });
-  }
-});
-
-app.post("/logIn", async (req, res) => {
-  try {
-    const user = await User.findOne({ email: req.body.email });
-
-    if (!user) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
-
-    const isCorrect = await comparePassword(req.body.password, user.password);
-
-    if (!isCorrect) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
-
-    const token = jwt.sign(
-      {
-        userId: user._id,
-        email: user.email,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
-    );
-    res.json({
-      message: "Successfull login",
-      token: token,
-    });
-  } catch (error) {
-    res.status(500).json({ message: "An error has occurred" });
-  }
-});
-
-app.get("/users", authenticateToken, async (req, res) => {
-  try {
-    const allUsers = await User.find();
-
-    const userSafe = allUsers.map((u) => {
-      const user = u.toObject();
-      delete user.password;
-      delete user._id;
-      delete user.__v;
-
-      return user;
-    });
-
-    res.json(userSafe);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-app.get("/myUser", authenticateToken, async (req, res) => {
-  try {
-    const myUser = await User.findById(req.user.userId);
-    const userSafe = myUser.toObject();
-    delete userSafe.password;
-    delete userSafe._id;
-    delete userSafe.__v;
-    res.json(userSafe);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-app.put("/update", authenticateToken, async (req, res) => {
-  try {
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user.userId,
-      req.body,
-      { new: true }
-    );
-    if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    const userSafe = updatedUser.toObject();
-    delete userSafe.password;
-    delete userSafe._id;
-    delete userSafe.__v;
-
-    res.json(userSafe);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+app.use(routes);
 
 mongoose
   .connect(process.env.MONGODB_URI)
