@@ -6,12 +6,7 @@ const router = express.Router();
 router.get("/", async (_req, res) => {
   try {
     const tasks = await Task.find();
-    const formattedTasks = tasks.map((t) => ({
-      ...t.toObject(),
-      id: t._id.toString(),
-      _id: undefined,
-    }));
-    res.json(formattedTasks);
+    res.json(tasks);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
